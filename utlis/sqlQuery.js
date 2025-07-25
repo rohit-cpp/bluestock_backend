@@ -1,5 +1,6 @@
 // sqlQuery.js
 
+// --- Company Table Queries ---
 export const createCompanyTableQuery = `
 CREATE TABLE IF NOT EXISTS company_details (
   id SERIAL PRIMARY KEY,
@@ -37,57 +38,53 @@ export const getCompanyByIdQuery = `
 SELECT * FROM company_details WHERE id = $1;
 `;
 
-// --- IPO Queries ---
-
+// --- IPO Table Queries ---
 export const createIpoTableQuery = `
-  CREATE TABLE IF NOT EXISTS ipo_details (
-    id SERIAL PRIMARY KEY,
-    company_id INT NOT NULL,
-    price_band VARCHAR(50) NOT NULL,
-    lot_size INT NOT NULL,
-    open_date DATE NOT NULL,
-    close_date DATE NOT NULL,
-    issue_size VARCHAR(50) NOT NULL,
-    ipo_type VARCHAR(50),
-    FOREIGN KEY (company_id) REFERENCES company_details(id) ON DELETE CASCADE
-  );
+CREATE TABLE IF NOT EXISTS ipos (
+  id SERIAL PRIMARY KEY,
+  company_id INTEGER REFERENCES company_details(id) ON DELETE CASCADE,
+  issue_price NUMERIC(10,2) NOT NULL,
+  open_date DATE NOT NULL,
+  close_date DATE NOT NULL,
+  shares_offered INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 `;
 
-export const getAllIpoQuery = `
-  SELECT i.*, c.name AS company_name
-  FROM ipo_details i
-  JOIN company_details c ON i.company_id = c.id
-  ORDER BY i.id DESC;
+export const getAllIposQuery = `
+SELECT ipos.*, company_details.name AS company_name
+FROM ipos
+JOIN company_details ON company_details.id = ipos.company_id
+ORDER BY open_date DESC;
 `;
 
-export const insertIpoQuery = `
-  INSERT INTO ipo_details (company_id, price_band, lot_size, open_date, close_date, issue_size, ipo_type)
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
-  RETURNING *;
-`;
-
-export const updateIpoByIdQuery = `
-  UPDATE ipo_details
-  SET company_id = $1,
-      price_band = $2,
-      lot_size = $3,
-      open_date = $4,
-      close_date = $5,
-      issue_size = $6,
-      ipo_type = $7
-  WHERE id = $8
-  RETURNING *;
-`;
-
-export const deleteIpoByIdQuery = `
-  DELETE FROM ipo_details
-  WHERE id = $1
-  RETURNING *;
+export const searchIposQuery = `
+SELECT ipos.*, company_details.name AS company_name
+FROM ipos
+JOIN company_details ON company_details.id = ipos.company_id
+WHERE company_details.name ILIKE $1 OR CAST(issue_price AS TEXT) ILIKE $1;
 `;
 
 export const getIpoByIdQuery = `
-  SELECT i.*, c.name AS company_name
-  FROM ipo_details i
-  JOIN company_details c ON i.company_id = c.id
-  WHERE i.id = $1;
+SELECT ipos.*, company_details.name AS company_name
+FROM ipos
+JOIN company_details ON company_details.id = ipos.company_id
+WHERE ipos.id = $1;
+`;
+
+export const insertIpoQuery = `
+INSERT INTO ipos (company_id, issue_price, open_date, close_date, shares_offered)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+`;
+
+export const updateIpoByIdQuery = `
+UPDATE ipos
+SET company_id = $1, issue_price = $2, open_date = $3, close_date = $4, shares_offered = $5
+WHERE id = $6
+RETURNING *;
+`;
+
+export const deleteIpoByIdQuery = `
+DELETE FROM ipos WHERE id = $1 RETURNING *;
 `;

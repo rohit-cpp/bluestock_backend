@@ -1,20 +1,25 @@
+// routes/ipoRoutes.js
+
 import express from "express";
-import { listAllCompanies } from "../controllers/CompanyController";
 import {
   addNewIpo,
   deleteIpo,
   getIpoDetails,
   listAllIpos,
+  searchIpos,
   updateIpo,
-} from "../controllers/IpoController";
+} from "../controllers/IpoController.js";
 
 const Iporouter = express.Router();
 
-Iporouter.get("/", listAllIpos);
-Iporouter.get("/search", addNewIpo);
-Iporouter.get("/:id");
-Iporouter.post("/", updateIpo);
-Iporouter.put("/:id", deleteIpo);
-Iporouter.delete("/:id");
+// Public Routes
+Iporouter.get("/", listAllIpos); // Get all IPOs
+Iporouter.get("/search", searchIpos); // Search IPOs
+Iporouter.get("/:id", getIpoDetails); // Get IPO by ID
+
+// Admin Routes
+Iporouter.post("/", addNewIpo); // Create IPO
+Iporouter.put("/:id", updateIpo); // Update IPO
+Iporouter.delete("/:id", deleteIpo); // Delete IPO
 
 export default Iporouter;

@@ -1,26 +1,39 @@
 // controllers/IpoDocController.js
-import path from "path";
 import fs from "fs";
-import { query } from "../utlis/connectToDb.js";
+
 import { getIpoByIdQuery } from "../utlis/sqlQuery.js";
+import { query } from "../utlis/connectToDb.js";
 
 export async function uploadIpoDocument(req, res, next) {
   const { id } = req.params;
+  const userEmail = req.user?.email || "unknown";
+
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
   const filePath = req.file.path;
+  const fileName = req.file.originalname;
 
   try {
-    const result = await query(
-      `UPDATE ipos SET document_url = $1 WHERE id = $2 RETURNING *`,
-      [filePath, id]
+    const check = await query(getIpoByIdQuery, [id]);
+    if (check.rows.length === 0)
+      return res.status(404).json({ error: "IPO not found" });
+
+    await query(`UPDATE ipos SET document_url = $1 WHERE id = $2`, [
+      filePath,
+      id,
+    ]);
+
+    const insert = await query(
+      `INSERT INTO documents (ipo_id, filename, file_path, uploaded_by)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [id, fileName, filePath, userEmail]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "IPO not found" });
-    }
-
-    res.status(200).json({ message: "Document uploaded", ipo: result.rows[0] });
+    res.status(200).json({
+      message: "Document uploaded and recorded",
+      ipo_id: id,
+      file: insert.rows[0],
+    });
   } catch (err) {
     console.error("Upload error:", err);
     next({ status: 500, message: "Failed to upload document" });
@@ -29,7 +42,6 @@ export async function uploadIpoDocument(req, res, next) {
 
 export async function downloadIpoDocument(req, res, next) {
   const { id } = req.params;
-
   try {
     const { rows } = await query(getIpoByIdQuery, [id]);
     if (rows.length === 0)
@@ -39,8 +51,7 @@ export async function downloadIpoDocument(req, res, next) {
     if (!filePath || !fs.existsSync(filePath)) {
       return res.status(404).json({ error: "Document not found" });
     }
-
-    res.download(filePath); // triggers browser download
+    res.download(filePath);
   } catch (err) {
     console.error("Download error:", err);
     next({ status: 500, message: "Failed to download document" });
@@ -49,7 +60,6 @@ export async function downloadIpoDocument(req, res, next) {
 
 export async function deleteIpoDocument(req, res, next) {
   const { id } = req.params;
-
   try {
     const { rows } = await query(getIpoByIdQuery, [id]);
     if (rows.length === 0)
@@ -61,7 +71,6 @@ export async function deleteIpoDocument(req, res, next) {
     }
 
     fs.unlinkSync(filePath);
-
     await query(`UPDATE ipos SET document_url = NULL WHERE id = $1`, [id]);
 
     res.status(200).json({ message: "Document deleted successfully" });

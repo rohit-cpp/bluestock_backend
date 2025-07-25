@@ -1,12 +1,15 @@
 import express from "express";
+import { protect } from "../utlis/authmiddleware.js";
+import { getAdminLogs, getAdminStats } from "../controllers/AdminController.js";
 
-const Adminrouter = express.Router();
+const router = express.Router();
 
-Adminrouter.get("/stats", (req, res) => {
-  res.send("Total IPOs and total companies");
-});
-Adminrouter.get("/logs", (req, res) => {
-  res.send("Login logs, and all activtes");
-});
+// ✅ GET /api/admin/stats
+// Admin dashboard: Get total companies, total IPOs, and IPOs per company
+router.get("/stats", protect, getAdminStats);
 
-export default Adminrouter;
+// ✅ GET /api/admin/logs
+// Admin activity logs: login/logout history
+router.get("/logs", protect, getAdminLogs);
+
+export default router;

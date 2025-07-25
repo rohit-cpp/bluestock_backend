@@ -6,6 +6,7 @@ import Companyrouter from "./routes/CompanyRoute.js";
 import Authrouter from "./routes/AuthRoute.js";
 import DocumentUploadrouter from "./routes/DocumentUpload.js";
 import Iporouter from "./routes/IpoRoutes.js";
+import router from "./routes/AdminRoute.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/auth", Authrouter);
 app.use("/api/companies", Companyrouter);
 app.use("/api/ipos", Iporouter);
 app.use("/api/ipos_doc", DocumentUploadrouter);
+app.use("/api/admin", router);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

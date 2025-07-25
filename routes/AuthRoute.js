@@ -1,12 +1,16 @@
+// routes/authRoutes.js
 import express from "express";
+import {
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../controllers/AuthController.js";
+import { protect } from "../utlis/authmiddleware.js";
 
-const Authrouter = express.Router();
+const router = express.Router();
 
-Authrouter.post("/login", (req, res) => {
-  res.send("Admin Login Successfully");
-});
-Authrouter.post("/logout", (req, res) => {
-  res.send("Admin Logout Successfully");
-});
+router.post("/register", registerUser); // POST /api/auth/register
+router.post("/login", loginUser); // POST /api/auth/login
+router.post("/logout", protect, logoutUser); // POST /api/auth/logout
 
-export default Authrouter;
+export default router;

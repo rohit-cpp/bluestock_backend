@@ -2,9 +2,10 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
-import Companyrouter from "./routes/CompanyRoute";
-import Authrouter from "./routes/AuthRoute";
-import DocumentUploadrouter from "./routes/DocumentUpload";
+import Companyrouter from "./routes/CompanyRoute.js";
+import Authrouter from "./routes/AuthRoute.js";
+import DocumentUploadrouter from "./routes/DocumentUpload.js";
+import Iporouter from "./routes/IpoRoutes.js";
 
 dotenv.config();
 
@@ -20,8 +21,14 @@ app.use(bodyParser.json());
 
 app.use("/api/auth", Authrouter);
 app.use("/api/companies", Companyrouter);
-app.use("/api/ipos", Companyrouter);
+app.use("/api/ipos", Iporouter);
 app.use("/api/ipos/:id", DocumentUploadrouter);
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal server error";
+  return res.status(statusCode).json({ error: message });
+});
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);

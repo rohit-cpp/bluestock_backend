@@ -1,15 +1,21 @@
+// routes/ipoDocRoutes.js
 import express from "express";
+import { upload } from "../utlis/upload.js";
+import {
+  deleteIpoDocument,
+  downloadIpoDocument,
+  uploadIpoDocument,
+} from "../controllers/DocumentController.js";
 
-const DocumentUploadrouter = express.Router();
+const router = express.Router();
 
-DocumentUploadrouter.post("/upload", (req, res) => {
-  res.send("Upload RHP/DRHP PDF");
-});
-DocumentUploadrouter.get("/download", (req, res) => {
-  res.send("Download RHP/DRHP document");
-});
-DocumentUploadrouter.delete("/delete-doc", (req, res) => {
-  res.send("Delete document from IPO");
-});
+// Admin: Upload IPO Document (PDF only)
+router.post("/:id/upload", upload.single("document"), uploadIpoDocument);
 
-export default DocumentUploadrouter;
+// Public: Download IPO Document
+router.get("/:id/download", downloadIpoDocument);
+
+// Admin: Delete IPO Document
+router.delete("/:id/delete-doc", deleteIpoDocument);
+
+export default router;

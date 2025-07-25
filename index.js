@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use("/api/auth", Authrouter);
 app.use("/api/companies", Companyrouter);
 app.use("/api/ipos", Iporouter);
-app.use("/api/ipos/:id", DocumentUploadrouter);
+app.use("/api/ipos_doc", DocumentUploadrouter);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
